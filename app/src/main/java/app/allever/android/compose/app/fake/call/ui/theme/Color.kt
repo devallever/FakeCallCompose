@@ -1,4 +1,4 @@
-package app.allever.android.compose.fake.call.ui.theme
+package app.allever.android.compose.app.fake.call.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -11,7 +11,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "app.allever.android.compose.fake.call"
+        applicationId = "app.allever.android.compose.app.fake.call"//app.allever.android.compose.sample.app.tweet
         minSdk = 24
         targetSdk = 36
         versionCode = 1

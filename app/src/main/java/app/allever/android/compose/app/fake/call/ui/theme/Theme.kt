@@ -1,6 +1,5 @@
-package app.allever.android.compose.fake.call.ui.theme
+package app.allever.android.compose.app.fake.call.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

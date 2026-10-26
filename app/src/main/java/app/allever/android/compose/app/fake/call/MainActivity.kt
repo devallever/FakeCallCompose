@@ -1,4 +1,4 @@
-package app.allever.android.compose.fake.call
+package app.allever.android.compose.app.fake.call
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import app.allever.android.compose.fake.call.ui.theme.FakeCallComposeTheme
+import app.allever.android.compose.app.fake.call.ui.theme.FakeCallComposeTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
