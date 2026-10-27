@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,12 +20,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,11 +48,14 @@ import app.allever.android.compose.app.fake.call.ui.theme.PurpleEnd
 import app.allever.android.compose.app.fake.call.util.toast
 
 class MainActivity : ComponentActivity() {
+
+    private val mViewModel by viewModels<MainViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val rememberIndex = remember { mutableIntStateOf(0) }
+            val rememberIndex = mViewModel.pageState
+            val contactList = mViewModel.contactState
 
             FakeCallComposeTheme(true) {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -277,6 +285,7 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     fun MainPage() {
+        var selectedIndex by rememberSaveable { mutableIntStateOf(-1) }
         Box(modifier = Modifier.fillMaxSize()) {
             Column {
                 Column(
@@ -401,40 +410,43 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .padding(end = 10.dp)
-                                    .size(84.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable {
-                                        toast("清除头像")
-                                    }
-                                    .border(0.5.dp, Color.Gray, RoundedCornerShape(12.dp))
 
-                            ) {
-                                Image(
-                                    painter = painterResource(R.drawable.fc_ic_no_avatar),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .align(Alignment.Center),
-                                    colorFilter = ColorFilter.tint(Color.DarkGray)
-                                )
-                            }
-                        }
+                        itemsIndexed(FaceCall.internalContacts) { index, contact ->
+                            val isSelected = selectedIndex == index
+                            val borderWidth = if (isSelected) 3.dp else 0.5.dp
+                            val borderColor = if (isSelected) PurpleEnd else Color.Gray
 
-                        FaceCall.internalContacts.forEach { contact ->
-                            item {
+                            if (index == 0) {
                                 Box(
                                     modifier = Modifier
                                         .padding(end = 10.dp)
                                         .size(84.dp)
                                         .clip(RoundedCornerShape(12.dp))
                                         .clickable {
-                                            toast(contact.name)
+                                            selectedIndex = index
                                         }
-                                        .border(0.5.dp, Color.Gray, RoundedCornerShape(12.dp))
+                                        .border(borderWidth, borderColor, RoundedCornerShape(12.dp))
+
+                                ) {
+                                    Image(
+                                        painter = painterResource(R.drawable.fc_ic_no_avatar),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .align(Alignment.Center),
+                                        colorFilter = ColorFilter.tint(Color.DarkGray)
+                                    )
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(end = 10.dp)
+                                        .size(84.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .clickable {
+                                            selectedIndex = index
+                                        }
+                                        .border(borderWidth, borderColor, RoundedCornerShape(12.dp))
 
                                 ) {
                                     if (contact.isInternal) {
@@ -450,6 +462,7 @@ class MainActivity : ComponentActivity() {
                                             painter = painterResource(R.drawable.fc_ic_no_avatar),
                                             contentDescription = null,
                                             modifier = Modifier
+                                                .padding(2.dp)
                                                 .fillMaxSize()
                                                 .align(Alignment.Center),
                                         )
@@ -457,6 +470,7 @@ class MainActivity : ComponentActivity() {
 
                                 }
                             }
+
                         }
                     }
                 }

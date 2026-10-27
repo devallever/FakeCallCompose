@@ -7,6 +7,5 @@ data class ContactItem(
     var number: String,
     var icon: Int? = null,
     var uri: Uri? = null,
-    var selected: Boolean = false,
     var isInternal: Boolean = false
 )

@@ -11,4 +11,4 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val GreenEnd = Color(0xff00D460)
-val PurpleEnd = Color(0xff565F81)
+val PurpleEnd = Color(0xff4A65F4)
