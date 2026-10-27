@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "app.allever.android.compose.fake.call"
+    namespace = "app.allever.android.compose.app.fake.call"
     compileSdk {
         version = release(36)
     }
