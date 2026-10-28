@@ -3,6 +3,9 @@ package app.allever.android.compose.app.fake.call
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainViewModel: ViewModel() {
     var pageState = mutableIntStateOf(0)
@@ -10,7 +13,14 @@ class MainViewModel: ViewModel() {
     var nameState = mutableStateOf("")
     var contactState = mutableStateOf(FaceCall.internalContacts)
 
-    fun a() {
+
+
+    init {
+        viewModelScope.launch {
+            delay(1000)
+            nameState.value = "Cristy"
+            phoneNumberState.value = "12345678901"
+        }
     }
 
 }

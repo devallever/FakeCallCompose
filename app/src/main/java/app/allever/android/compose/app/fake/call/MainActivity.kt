@@ -22,11 +22,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -34,11 +36,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusModifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,8 +60,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val rememberIndex = mViewModel.pageState
-            val contactList = mViewModel.contactState
-
             FakeCallComposeTheme(true) {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     //整个页面
@@ -65,7 +68,6 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier
                             .padding(innerPadding)
                             .fillMaxSize()
-                            .background(Color(0xff111111))
                     ) {
                         //顶部
                         Box(
@@ -285,14 +287,18 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     fun MainPage() {
+        val contactList = FaceCall.internalContacts
         var selectedIndex by rememberSaveable { mutableIntStateOf(-1) }
+        val name = mViewModel.nameState
+        val phoneNumber = mViewModel.phoneNumberState
+        var nameFocus by rememberSaveable { mutableStateOf(false) }
+        var phoneNumberFocus by rememberSaveable { mutableStateOf(false) }
         Box(modifier = Modifier.fillMaxSize()) {
             Column {
                 Column(
                     modifier = Modifier
                         .padding(horizontal = 20.dp)
                         .fillMaxWidth()
-                        .height(300.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color(0xff1A1A1C))
                         .padding(16.dp)
@@ -339,7 +345,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             //name
                             Text(
-                                text = "John Doe",
+                                text = name.value,
                                 fontSize = 16.sp,
                                 lineHeight = 16.sp,
                                 fontWeight = FontWeight.Bold,
@@ -347,7 +353,7 @@ class MainActivity : ComponentActivity() {
                             )
                             //number
                             Text(
-                                text = "+1 234 567 890",
+                                text = phoneNumber.value,
                                 fontSize = 14.sp,
                                 lineHeight = 14.sp,
                                 color = Color.White
@@ -411,7 +417,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        itemsIndexed(FaceCall.internalContacts) { index, contact ->
+                        itemsIndexed(contactList) { index, contact ->
                             val isSelected = selectedIndex == index
                             val borderWidth = if (isSelected) 3.dp else 0.5.dp
                             val borderColor = if (isSelected) PurpleEnd else Color.Gray
@@ -445,6 +451,8 @@ class MainActivity : ComponentActivity() {
                                         .clip(RoundedCornerShape(12.dp))
                                         .clickable {
                                             selectedIndex = index
+                                            mViewModel.nameState.value = contact.name
+                                            mViewModel.phoneNumberState.value = contact.number
                                         }
                                         .border(borderWidth, borderColor, RoundedCornerShape(12.dp))
 
@@ -473,19 +481,113 @@ class MainActivity : ComponentActivity() {
 
                         }
                     }
+
+                    val nameBorderColor = if (nameFocus) PurpleEnd else Color.Gray
+                    val phoneNumberBorderColor = if (phoneNumberFocus) PurpleEnd else Color.Gray
+                    val nameBorderWidth = if (nameFocus) 2.dp else 0.5.dp
+                    val phoneNumberBorderWidth = if (phoneNumberFocus) 2.dp else 0.5.dp
+                    Row(
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .height(48.dp)
+                            .fillMaxWidth()
+                    ) {
+                        BasicTextField(
+                            name.value,
+                            textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                            singleLine = true,
+                            onValueChange = {
+                                mViewModel.nameState.value = it
+                            },
+                            modifier = Modifier
+                                .padding(end = 4.dp)
+                                .fillMaxSize()
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .border(nameBorderWidth, nameBorderColor, RoundedCornerShape(12.dp))
+                                .padding(horizontal = 10.dp)
+                                .onFocusChanged {
+                                    nameFocus = it.isFocused
+                                }) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
+                                if (name.value.isEmpty()) {
+                                    Text(
+                                        text = "Name",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.padding(0.dp)
+                                    )
+                                }
+                                it()
+                            }
+                        }
+
+                        BasicTextField(
+                            phoneNumber.value,
+                            textStyle = TextStyle(color = Color.White, fontSize = 14.sp),
+                            singleLine = true,
+                            onValueChange = {
+                                mViewModel.phoneNumberState.value = it
+                            },
+                            modifier = Modifier
+                                .padding(start = 4.dp)
+                                .fillMaxSize()
+                                .weight(1f)
+                                .clip(RoundedCornerShape(8.dp))
+                                .border(
+                                    phoneNumberBorderWidth,
+                                    phoneNumberBorderColor,
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .padding(horizontal = 10.dp)
+                                .onFocusChanged {
+                                    phoneNumberFocus = it.isFocused
+                                }) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
+                                if (phoneNumber.value.isEmpty()) {
+                                    Text(
+                                        text = "Phone Number",
+                                        color = Color.Gray,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.padding(0.dp)
+                                    )
+                                }
+                                it()
+                            }
+                        }
+                    }
                 }
             }
 
             //按钮
             Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .padding(horizontal = 20.dp, vertical = 10.dp)
                     .fillMaxWidth()
                     .height(56.dp)
                     .clip(RoundedCornerShape(18.dp))
                     .background(GreenEnd)
+                    .clickable {
+                        toast("start")
+                    }
                     .align(Alignment.BottomCenter)
-            )
+            ) {
+                Row {
+                    Image(
+                        painter = painterResource(R.drawable.fc_ic_phone),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+                    Text(
+                        text = "Start Fake Call",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 10.dp)
+                    )
+                }
+            }
 
         }
 
