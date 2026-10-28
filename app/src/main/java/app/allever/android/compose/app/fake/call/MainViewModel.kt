@@ -12,6 +12,9 @@ class MainViewModel: ViewModel() {
     var phoneNumberState = mutableStateOf("")
     var nameState = mutableStateOf("")
     var contactState = mutableStateOf(FaceCall.internalContacts)
+    var showScheduleState = mutableStateOf(false)
+    var timeState = mutableIntStateOf(1)
+    val scheduleTitleState = mutableStateOf("")
 
 
 

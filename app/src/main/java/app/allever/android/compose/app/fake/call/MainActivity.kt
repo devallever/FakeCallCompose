@@ -295,6 +295,7 @@ class MainActivity : ComponentActivity() {
         var phoneNumberFocus by rememberSaveable { mutableStateOf(false) }
         Box(modifier = Modifier.fillMaxSize()) {
             Column {
+                //Caller Info
                 Column(
                     modifier = Modifier
                         .padding(horizontal = 20.dp)
@@ -557,6 +558,55 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+
+                //Call Schedule
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp, vertical = 10.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xff202020))
+                        .padding(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(38.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xff292C36)), contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.fc_ic_time),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(PurpleEnd),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        //Title
+                        Text(
+                            text = "Call Schedule",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            lineHeight = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                        )
+                        //desc
+                        Text(
+                            text = "Change timing from Schedule in the top bar",
+                            color = Color.Gray,
+                            fontSize = 11.sp,
+                            lineHeight = 11.sp,
+                            modifier = Modifier
+                        )
+                    }
+
+                }
             }
 
             //按钮
@@ -571,8 +621,7 @@ class MainActivity : ComponentActivity() {
                     .clickable {
                         toast("start")
                     }
-                    .align(Alignment.BottomCenter)
-            ) {
+                    .align(Alignment.BottomCenter)) {
                 Row {
                     Image(
                         painter = painterResource(R.drawable.fc_ic_phone),

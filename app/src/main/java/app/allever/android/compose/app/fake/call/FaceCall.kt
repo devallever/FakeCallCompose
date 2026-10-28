@@ -1,6 +1,7 @@
 package app.allever.android.compose.app.fake.call
 
 import app.allever.android.compose.app.fake.call.data.ContactItem
+import app.allever.android.compose.app.fake.call.data.ScheduleItem
 
 object FaceCall {
 
@@ -55,5 +56,20 @@ object FaceCall {
                 isInternal = true
             )
         )
+    }
+
+    val scheduleList = mutableListOf<ScheduleItem>().apply {
+        add(ScheduleItem(1, "Now", "Start immediately"))
+        add(ScheduleItem(5, "5 sec", "Short delay"))
+        //10
+        add(ScheduleItem(10, "10 sec", "Quick delay"))
+        //30
+        add(ScheduleItem(30, "30 sec", "Long delay"))
+        //60
+        add(ScheduleItem(60, "1 min", "One minute delay"))
+        //120
+        add(ScheduleItem(120, "2 min", "Two minute delay"))
+        //300
+        add(ScheduleItem(300, "5 min", "Five minute delay"))
     }
 }
