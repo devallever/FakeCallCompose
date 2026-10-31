@@ -1,6 +1,7 @@
 package app.allever.android.compose.app.fake.call
 
 import app.allever.android.compose.app.fake.call.data.ContactItem
+import app.allever.android.compose.app.fake.call.data.RecentItem
 import app.allever.android.compose.app.fake.call.data.ScheduleItem
 
 object FaceCall {
@@ -71,5 +72,14 @@ object FaceCall {
         add(ScheduleItem(120, "2 min", "Two minute delay"))
         //300
         add(ScheduleItem(300, "5 min", "Five minute delay"))
+    }
+
+    val recentList = mutableListOf<RecentItem>().apply {
+        add(RecentItem("张三", "12345678901", System.currentTimeMillis(), R.drawable.fc_avatar_01))
+        add(RecentItem("李四", "12345678902", System.currentTimeMillis(), R.drawable.fc_avatar_02))
+        add(RecentItem("王五", "12345678903", System.currentTimeMillis(), R.drawable.fc_avatar_03))
+        add(RecentItem("赵六", "12345678904", System.currentTimeMillis(), R.drawable.fc_avatar_04))
+        add(RecentItem("孙七", "12345678905", System.currentTimeMillis(), R.drawable.fc_avatar_05))
+        add(RecentItem("周八", "12345678906", System.currentTimeMillis(), R.drawable.fc_avatar_06))
     }
 }

@@ -273,7 +273,10 @@ class MainActivity : ComponentActivity() {
 
                     Column(modifier = Modifier.padding(start = 8.dp)) {
                         Text(
-                            text = "Schedule", fontSize = 12.sp, lineHeight = 12.sp, color = Color.White
+                            text = "Schedule",
+                            fontSize = 12.sp,
+                            lineHeight = 12.sp,
+                            color = Color.White
                         )
                         //now
                         Text(
@@ -954,7 +957,96 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     fun RecentPage() {
-        Text(text = "Recent Page")
+        val recentCount = mViewModel.recentState.size
+        Column {
+            Text(
+                text = "$recentCount calls",
+                color = Color.White,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            LazyColumn(modifier = Modifier.padding(top = 16.dp)) {
+                itemsIndexed(mViewModel.recentState) { index, recent ->
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xff1A1A1C))
+                            .clickable {
+                                toast(recent.name)
+                            }
+                            .padding(16.dp)) {
+                        AsyncImage(
+                            model = recent.avatar,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(90.dp))
+                                .align(Alignment.CenterVertically)
+                        )
+                        Column(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .weight(1f)
+                                .align(Alignment.CenterVertically)
+                        ) {
+                            //name
+                            Text(
+                                text = recent.name,
+                                color = Color.White,
+                                fontSize = 14.sp,
+                                lineHeight = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            //number
+                            Text(
+                                text = recent.phone,
+                                color = Color.Gray,
+                                fontSize = 12.sp,
+                                lineHeight = 10.sp,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                            //date
+                            Text(
+                                text = recent.time.toString(),
+                                color = Color.Gray,
+                                fontSize = 12.sp,
+                                lineHeight = 10.sp
+                            )
+                        }
+
+                        Row(modifier = Modifier.align(Alignment.CenterVertically)) {
+                            Image(
+                                painter = painterResource(R.drawable.fc_ic_phone),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(GreenEnd),
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .align(Alignment.CenterVertically)
+                                    .clip(RoundedCornerShape(90.dp))
+                                    .clickable {
+                                        toast("Phone")
+                                    }
+                                    .padding(10.dp))
+                            Image(
+                                painter = painterResource(R.drawable.fc_ic_delete),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(Color(0xffFFABA3)),
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .align(Alignment.CenterVertically)
+                                    .clip(RoundedCornerShape(90.dp))
+                                    .clickable {
+                                        toast("Delete")
+                                        mViewModel.recentState.remove(recent)
+                                    }
+                                    .padding(10.dp))
+
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Preview
@@ -972,6 +1064,7 @@ class MainActivity : ComponentActivity() {
             else -> GreenEnd
         }
     }
+
     override fun onBackPressed() {
         if (mViewModel.showScheduleState.value) {
             mViewModel.showScheduleState.value = false

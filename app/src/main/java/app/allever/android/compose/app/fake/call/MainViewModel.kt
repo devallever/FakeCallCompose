@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.allever.android.compose.app.fake.call.data.ContactItem
+import app.allever.android.compose.app.fake.call.data.RecentItem
 import app.allever.android.compose.app.fake.call.util.log
 import app.allever.android.compose.app.fake.call.util.toast
 import kotlinx.coroutines.delay
@@ -35,6 +36,9 @@ class MainViewModel: ViewModel() {
     var contactSelectIndex = mutableIntStateOf(-1)
 
 
+    val recentState = mutableStateListOf<RecentItem>().apply {
+        addAll(FaceCall.recentList)
+    }
 
     init {
         viewModelScope.launch {
