@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import app.allever.android.compose.app.fake.call.data.ContactItem
 import app.allever.android.compose.app.fake.call.ui.theme.FakeCallComposeTheme
 import app.allever.android.compose.app.fake.call.ui.theme.GreenEnd
 import app.allever.android.compose.app.fake.call.ui.theme.PurpleEnd
@@ -69,6 +70,7 @@ import app.allever.android.compose.app.fake.call.util.DisplayHelper
 import app.allever.android.compose.app.fake.call.util.log
 import app.allever.android.compose.app.fake.call.util.toast
 import coil.compose.AsyncImage
+import okhttp3.internal.notify
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.roundToInt
@@ -77,7 +79,7 @@ class MainActivity : ComponentActivity() {
     private val pickPhoneLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
+        if (result.resultCode == RESULT_OK) {
             val uri = result.data?.data ?: return@registerForActivityResult
             // uri 形如 content://com.android.contacts/data/phones/123，已含临时授权
             contentResolver.query(uri, null, null, null, null)?.use { c ->
@@ -114,7 +116,12 @@ class MainActivity : ComponentActivity() {
         if (savedPath != null) {
 //            SettingStore.setAvatarPath(savedPath)
 //            loadAvatar()
-            toast("path = $savedPath")
+            val contactItem =
+                ContactItem(name = "", number = "", resource = savedPath, isInternal = false)
+
+            mViewModel.contactState.add(1, contactItem)
+            mViewModel.avatarState.value = savedPath
+            mViewModel.contactSelectIndex.value = 1
         } else {
             toast("Avatar save failed")
         }
@@ -395,15 +402,15 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     fun MainPage() {
-        val contactList = mViewModel.contactState.value
-        var avatarSelectedIndex by rememberSaveable { mutableIntStateOf(-1) }
+        val contactList = mViewModel.contactState
+        var avatarSelectedIndex by mViewModel.contactSelectIndex
         val name = mViewModel.nameState
         val phoneNumber = mViewModel.phoneNumberState
         var nameFocus by rememberSaveable { mutableStateOf(false) }
         var phoneNumberFocus by rememberSaveable { mutableStateOf(false) }
         var showSchedule by mViewModel.showScheduleState
         var scheduleSelectIndex by rememberSaveable { mutableIntStateOf(-1) }
-        var avatarStatus = mViewModel.avatarState
+        val avatarStatus = mViewModel.avatarState
         Box(modifier = Modifier.fillMaxSize()) {
             Column {
                 //Caller Info
@@ -479,7 +486,10 @@ class MainActivity : ComponentActivity() {
                                 .align(Alignment.CenterVertically)
                                 .clickable {
                                     pickPhoneLauncher.launch(
-                                        Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)
+                                        Intent(
+                                            Intent.ACTION_PICK,
+                                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI
+                                        )
                                     )
 
                                 }, contentAlignment = Alignment.Center
@@ -552,9 +562,10 @@ class MainActivity : ComponentActivity() {
                                         .border(borderWidth, borderColor, RoundedCornerShape(12.dp))
 
                                 ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.fc_ic_no_avatar),
+                                    AsyncImage(
+                                        model = R.drawable.fc_ic_no_avatar,
                                         contentDescription = null,
+                                        contentScale = ContentScale.Crop,
                                         modifier = Modifier
                                             .size(48.dp)
                                             .align(Alignment.Center),
@@ -569,32 +580,46 @@ class MainActivity : ComponentActivity() {
                                         .clip(RoundedCornerShape(12.dp))
                                         .clickable {
                                             avatarSelectedIndex = index
-                                            mViewModel.nameState.value = contact.name
-                                            mViewModel.phoneNumberState.value = contact.number
+                                            if (contact.isInternal) {
+                                                mViewModel.nameState.value = contact.name
+                                                mViewModel.phoneNumberState.value = contact.number
+                                            }
                                             avatarStatus.value = contact.resource!!
                                         }
                                         .border(borderWidth, borderColor, RoundedCornerShape(12.dp))
 
                                 ) {
-                                    if (contact.isInternal) {
-                                        AsyncImage(
-                                            model = contact.resource,
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .align(Alignment.Center)
-                                        )
-                                    } else {
-                                        Image(
-                                            painter = painterResource(R.drawable.fc_ic_no_avatar),
-                                            contentDescription = null,
-                                            modifier = Modifier
-                                                .padding(2.dp)
-                                                .fillMaxSize()
-                                                .align(Alignment.Center),
-                                        )
-                                    }
+                                    AsyncImage(
+                                        model = contact.resource,
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .align(Alignment.Center)
+                                    )
 
+                                    if (!contact.isInternal) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(RoundedCornerShape(90.dp))
+                                                .background(Color(0x80000000))
+                                                .clickable {
+                                                    mViewModel.contactState.removeAt(index)
+                                                    mViewModel.avatarState.value = R.drawable.fc_ic_contact
+                                                    avatarSelectedIndex = 0
+                                                }.align(Alignment.TopEnd)
+                                            , contentAlignment = Alignment.Center
+                                        ) {
+                                            Image(
+                                                painter = painterResource(R.drawable.fc_ic_delete),
+                                                contentDescription = null,
+                                                colorFilter = ColorFilter.tint(Color.White),
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+
+                                    }
                                 }
                             }
 
