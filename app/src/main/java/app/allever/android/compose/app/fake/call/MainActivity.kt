@@ -1,9 +1,14 @@
 package app.allever.android.compose.app.fake.call
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.ContactsContract
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -63,6 +68,27 @@ import app.allever.android.compose.app.fake.call.util.toast
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
+    private val pickPhoneLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val uri = result.data?.data ?: return@registerForActivityResult
+            // uri 形如 content://com.android.contacts/data/phones/123，已含临时授权
+            contentResolver.query(uri, null, null, null, null)?.use { c ->
+                if (c.moveToFirst()) {
+                    val name = c.getString(
+                        c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
+                    )
+                    val number = c.getString(
+                        c.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)
+                    )
+                    log("Contact: name=$name, number=$number")
+                    mViewModel.nameState.value = name
+                    mViewModel.phoneNumberState.value = number
+                }
+            }
+        }
+    }
 
     private val mViewModel by viewModels<MainViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -384,7 +410,10 @@ class MainActivity : ComponentActivity() {
                                 .background(Color(0xff2A2C36))
                                 .align(Alignment.CenterVertically)
                                 .clickable {
-                                    toast("选择通讯录联系人")
+                                    pickPhoneLauncher.launch(
+                                        Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)
+                                    )
+
                                 }, contentAlignment = Alignment.Center
                         ) {
                             Image(

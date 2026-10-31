@@ -1,9 +1,15 @@
 package app.allever.android.compose.app.fake.call
 
+import android.content.ContentUris
+import android.content.Intent
+import android.net.Uri
+import android.provider.ContactsContract
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.allever.android.compose.app.fake.call.util.log
+import app.allever.android.compose.app.fake.call.util.toast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -25,5 +31,6 @@ class MainViewModel: ViewModel() {
             phoneNumberState.value = "12345678901"
         }
     }
+
 
 }
