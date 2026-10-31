@@ -12,3 +12,4 @@ val Pink40 = Color(0xFF7D5260)
 
 val GreenEnd = Color(0xff00D460)
 val PurpleEnd = Color(0xff4A65F4)
+val PinkEnd = Color(0xff8E61F2)

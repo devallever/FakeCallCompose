@@ -65,6 +65,7 @@ import androidx.compose.ui.window.Popup
 import app.allever.android.compose.app.fake.call.data.ContactItem
 import app.allever.android.compose.app.fake.call.ui.theme.FakeCallComposeTheme
 import app.allever.android.compose.app.fake.call.ui.theme.GreenEnd
+import app.allever.android.compose.app.fake.call.ui.theme.PinkEnd
 import app.allever.android.compose.app.fake.call.ui.theme.PurpleEnd
 import app.allever.android.compose.app.fake.call.util.DisplayHelper
 import app.allever.android.compose.app.fake.call.util.log
@@ -169,9 +170,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val rememberIndex = mViewModel.pageState
-            var showSchedule by mViewModel.showScheduleState
-            var buttonBottomY by remember { mutableIntStateOf(0) }
             FakeCallComposeTheme(true) {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     //整个页面
@@ -182,179 +180,210 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                     ) {
                         //顶部
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 20.dp, vertical = 10.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                //logo
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(GreenEnd),
-                                ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.fc_ic_phone),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                            .align(Alignment.Center),
-                                        colorFilter = ColorFilter.tint(Color.White)
-                                    )
-                                }
-                                //text
-                                Column(modifier = Modifier.padding(start = 10.dp)) {
-                                    Text(
-                                        text = "Fake Call",
-                                        fontSize = 16.sp,
-                                        lineHeight = 16.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                    )
-                                    //desc
-                                    Text(
-                                        text = "realistic prank call",
-                                        fontSize = 14.sp,
-                                        lineHeight = 14.sp,
-                                        color = Color.Gray,
-                                    )
-                                }
-                            }
-
-                            Row(modifier = Modifier
-                                .onGloballyPositioned {
-                                    buttonBottomY = it.boundsInWindow().bottom.roundToInt()
-                                    log("buttonBottomY = $buttonBottomY")
-                                }
-                                .align(Alignment.CenterEnd)
-                                .clip(RoundedCornerShape(45.dp))
-                                .border(1.dp, Color(0xff8298E7), RoundedCornerShape(45.dp))
-                                .clickable {
-                                    showSchedule = !showSchedule
-                                }
-                                .background(Color(0xff242A3B))
-                                .padding(horizontal = 8.dp, vertical = 4.dp)) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clip(RoundedCornerShape(45.dp))
-                                        .background(Color(0xff565F81))
-                                        .align(Alignment.CenterVertically)
-                                ) {
-                                    Image(
-                                        painter = painterResource(R.drawable.fc_ic_time),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .size(18.dp)
-                                            .align(Alignment.Center),
-                                        colorFilter = ColorFilter.tint(Color.White)
-                                    )
-                                }
-
-                                Column(modifier = Modifier.padding(start = 8.dp)) {
-                                    Text(
-                                        text = "Schedule",
-                                        fontSize = 12.sp,
-                                        lineHeight = 12.sp,
-                                        color = Color.White
-                                    )
-                                    //now
-                                    Text(
-                                        text = mViewModel.scheduleTitleState.value,
-                                        fontSize = 14.sp,
-                                        lineHeight = 14.sp,
-                                        color = PurpleEnd,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-
-                                Image(
-                                    painter = painterResource(R.drawable.fc_ic_down_arrow),
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Inside,
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .align(Alignment.CenterVertically),
-                                    colorFilter = ColorFilter.tint(Color(0xff565F81))
-                                )
-
-                            }
-                        }
+                        TopContent()
                         //中心内容区
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
-                        ) {
-                            when (rememberIndex.intValue) {
-                                0 -> {
-                                    MainPage()
-                                }
-
-                                1 -> {
-                                    RecentPage()
-                                }
-
-                                2 -> {
-                                    SettingsPage()
-                                }
-                            }
-                        }
+                        CenterContent(modifier = Modifier.weight(1f))
                         //底部导航栏
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(110.dp)
-                                .padding(horizontal = 16.dp, vertical = 10.dp)
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(Color(0xff242731)),
-                            contentAlignment = Alignment.Center //内容居中
-                        ) {
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable {
-                                            rememberIndex.intValue = 0
-                                        }, horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    NavigationItem(
-                                        R.drawable.fc_ic_nav_home_filled,
-                                        "Keypad",
-                                        rememberIndex.intValue == 0
-                                    )
-                                }
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable {
-                                            rememberIndex.intValue = 1
-                                        }, horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    NavigationItem(
-                                        R.drawable.fc_ic_phone,
-                                        "Recent",
-                                        rememberIndex.intValue == 1
-                                    )
-                                }
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable {
-                                            rememberIndex.intValue = 2
-                                        }, horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    NavigationItem(
-                                        R.drawable.fc_ic_settings,
-                                        "Settings",
-                                        rememberIndex.intValue == 2
-                                    )
-                                }
-                            }
-                        }
+                        BottomNavigation()
                     }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun TopContent() {
+        var showSchedule by mViewModel.showScheduleState
+        var buttonBottomY by remember { mutableIntStateOf(0) }
+        var pageIndex by mViewModel.pageState
+        var pageTitle by mViewModel.pageTitleState
+        var pageDesc by mViewModel.pageDescState
+        var pageIcon by mViewModel.pageIconState
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 20.dp, vertical = 10.dp)
+                .fillMaxWidth()
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                //logo
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(getPageThemeColor()),
+                ) {
+                    Image(
+                        painter = painterResource(pageIcon),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .align(Alignment.Center),
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+                }
+                //text
+                Column(modifier = Modifier.padding(start = 10.dp)) {
+                    Text(
+                        text = pageTitle,
+                        fontSize = 16.sp,
+                        lineHeight = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                    )
+                    //desc
+                    Text(
+                        text = pageDesc,
+                        fontSize = 14.sp,
+                        lineHeight = 14.sp,
+                        color = Color.Gray,
+                    )
+                }
+            }
+
+            if (pageIndex == 0) {
+                Row(modifier = Modifier
+                    .onGloballyPositioned {
+                        buttonBottomY = it.boundsInWindow().bottom.roundToInt()
+                        log("buttonBottomY = $buttonBottomY")
+                    }
+                    .align(Alignment.CenterEnd)
+                    .clip(RoundedCornerShape(45.dp))
+                    .border(1.dp, Color(0xff8298E7), RoundedCornerShape(45.dp))
+                    .clickable {
+                        showSchedule = !showSchedule
+                    }
+                    .background(Color(0xff242A3B))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(RoundedCornerShape(45.dp))
+                            .background(Color(0xff565F81))
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.fc_ic_time),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(18.dp)
+                                .align(Alignment.Center),
+                            colorFilter = ColorFilter.tint(Color.White)
+                        )
+                    }
+
+                    Column(modifier = Modifier.padding(start = 8.dp)) {
+                        Text(
+                            text = "Schedule", fontSize = 12.sp, lineHeight = 12.sp, color = Color.White
+                        )
+                        //now
+                        Text(
+                            text = mViewModel.scheduleTitleState.value,
+                            fontSize = 14.sp,
+                            lineHeight = 14.sp,
+                            color = PurpleEnd,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Image(
+                        painter = painterResource(R.drawable.fc_ic_down_arrow),
+                        contentDescription = null,
+                        contentScale = ContentScale.Inside,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .align(Alignment.CenterVertically),
+                        colorFilter = ColorFilter.tint(Color(0xff565F81))
+                    )
+
+                }
+            }
+
+        }
+    }
+
+    @Composable
+    fun CenterContent(modifier: Modifier) {
+        val rememberIndex = mViewModel.pageState
+        Box(
+            modifier = modifier.fillMaxWidth()
+        ) {
+            when (rememberIndex.intValue) {
+                0 -> {
+                    MainPage()
+                }
+
+                1 -> {
+                    RecentPage()
+                }
+
+                2 -> {
+                    SettingsPage()
+                }
+            }
+        }
+    }
+
+
+    @Preview
+    @Composable
+    fun BottomNavigation() {
+        val rememberIndex = mViewModel.pageState
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(110.dp)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xff242731)), contentAlignment = Alignment.Center //内容居中
+        ) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(18.dp))
+                        .clickable {
+                            rememberIndex.intValue = 0
+                            mViewModel.pageState.intValue = 0
+                            mViewModel.pageTitleState.value = "Keypad"
+                            mViewModel.pageDescState.value = "realistic prank call"
+                            mViewModel.pageIconState.value = R.drawable.fc_ic_nav_home_filled
+                        }, horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    NavigationItem(
+                        R.drawable.fc_ic_nav_home_filled, "Keypad", rememberIndex.intValue == 0
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(18.dp))
+                        .clickable {
+                            rememberIndex.intValue = 1
+                            mViewModel.pageState.intValue = 1
+                            mViewModel.pageTitleState.value = "Recent"
+                            mViewModel.pageDescState.value = "recent calls"
+                            mViewModel.pageIconState.value = R.drawable.fc_ic_phone
+                        }, horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    NavigationItem(
+                        R.drawable.fc_ic_phone, "Recent", rememberIndex.intValue == 1
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(18.dp))
+                        .weight(1f)
+                        .clickable {
+                            rememberIndex.intValue = 2
+                            mViewModel.pageState.intValue = 2
+                            mViewModel.pageTitleState.value = "Settings"
+                            mViewModel.pageDescState.value = "settings"
+                            mViewModel.pageIconState.value = R.drawable.fc_ic_settings
+                        }, horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    NavigationItem(
+                        R.drawable.fc_ic_settings, "Settings", rememberIndex.intValue == 2
+                    )
                 }
             }
         }
@@ -363,8 +392,8 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun NavigationItem(icon: Int, text: String, selected: Boolean) {
         val iconColor = if (selected) Color.White else Color.Gray
-        val textColor = if (selected) GreenEnd else Color.Gray
-        val bgColor = if (selected) GreenEnd else Color(0xff2C2C2E)
+        val textColor = if (selected) getPageThemeColor() else Color.Gray
+        val bgColor = if (selected) getPageThemeColor() else Color(0xff2C2C2E)
         Box(
             modifier = Modifier
                 .size(48.dp)
@@ -393,7 +422,7 @@ class MainActivity : ComponentActivity() {
                     .width(20.dp)
                     .height(2.dp)
                     .clip(RoundedCornerShape(1.dp))
-                    .background(GreenEnd)
+                    .background(getPageThemeColor())
             )
         }
 
@@ -606,11 +635,12 @@ class MainActivity : ComponentActivity() {
                                                 .background(Color(0x80000000))
                                                 .clickable {
                                                     mViewModel.contactState.removeAt(index)
-                                                    mViewModel.avatarState.value = R.drawable.fc_ic_contact
+                                                    mViewModel.avatarState.value =
+                                                        R.drawable.fc_ic_contact
                                                     avatarSelectedIndex = 0
-                                                }.align(Alignment.TopEnd)
-                                            , contentAlignment = Alignment.Center
-                                        ) {
+                                                }
+                                                .align(Alignment.TopEnd),
+                                            contentAlignment = Alignment.Center) {
                                             Image(
                                                 painter = painterResource(R.drawable.fc_ic_delete),
                                                 contentDescription = null,
@@ -921,15 +951,6 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    override fun onBackPressed() {
-        if (mViewModel.showScheduleState.value) {
-            mViewModel.showScheduleState.value = false
-        } else {
-            super.onBackPressed()
-        }
-
-    }
-
     @Preview
     @Composable
     fun RecentPage() {
@@ -940,5 +961,23 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun SettingsPage() {
         Text(text = "Settings Page")
+    }
+
+
+    fun getPageThemeColor(): Color {
+        return when (mViewModel.pageState.intValue) {
+            0 -> GreenEnd
+            1 -> PurpleEnd
+            2 -> PinkEnd
+            else -> GreenEnd
+        }
+    }
+    override fun onBackPressed() {
+        if (mViewModel.showScheduleState.value) {
+            mViewModel.showScheduleState.value = false
+        } else {
+            super.onBackPressed()
+        }
+
     }
 }

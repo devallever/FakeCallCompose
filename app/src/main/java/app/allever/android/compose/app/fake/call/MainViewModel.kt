@@ -16,6 +16,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainViewModel: ViewModel() {
+    var pageTitleState = mutableStateOf("Fake Call")
+    var pageDescState = mutableStateOf("Realistic prank calls")
+    var pageIconState = mutableStateOf(R.drawable.fc_ic_phone)
+
     var pageState = mutableIntStateOf(0)
     var phoneNumberState = mutableStateOf("12345678901")
     var nameState = mutableStateOf("Cristy")
