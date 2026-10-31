@@ -1,13 +1,16 @@
 package app.allever.android.compose.app.fake.call
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.Image
@@ -65,6 +68,9 @@ import app.allever.android.compose.app.fake.call.ui.theme.PurpleEnd
 import app.allever.android.compose.app.fake.call.util.DisplayHelper
 import app.allever.android.compose.app.fake.call.util.log
 import app.allever.android.compose.app.fake.call.util.toast
+import coil.compose.AsyncImage
+import java.io.File
+import java.io.FileOutputStream
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
@@ -89,6 +95,67 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    /**
+     * 系统相册选择器（Photo Picker，Android 13+）。
+     * Android 12 及以下 ActivityResultContracts 自动回退到 ACTION_GET_CONTENT。
+     *
+     * 为什么不能用 by lazy？
+     * registerForActivityResult 要求在 LifecycleOwner STARTED 之前完成注册。
+     * 如果用 lazy 并在 onClick()（RESUMED 状态）才第一次访问，会抛 IllegalStateException。
+     *
+     * 所以这里用普通 val — Activity 构造时立即执行注册，保证时序安全。
+     */
+    private val pickAvatarLauncher = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        uri ?: return@registerForActivityResult
+        val savedPath = copyImageToPrivateDir(this, uri)
+        if (savedPath != null) {
+//            SettingStore.setAvatarPath(savedPath)
+//            loadAvatar()
+            toast("path = $savedPath")
+        } else {
+            toast("Avatar save failed")
+        }
+    }
+
+    /**
+     * 将系统 Content URI（来自 Photo Picker / ACTION_PICK / OpenDocument）的图片
+     * 复制到应用私有存储目录 filesDir/avatars/，返回内部文件的绝对路径字符串。
+     *
+     * 为什么需要复制而不是直接保存 URI？
+     * ─────────────────────────────────────────
+     * 1. Android 10+ 分区存储（Scoped Storage）：外部 URI 多为临时授权，进程重启后失效
+     * 2. Photo Picker 返回的 URI 是 Activity 级别的临时 grant，onDestroy 后自动撤销
+     * 3. 直接保存 file:// 或 content:// 在不同厂商 ROM 上兼容性差
+     *
+     * 存储位置：{filesDir}/avatars/avatar_{timestamp}.jpg
+     * 生命周期：随 App 安装存在，卸载时自动清除
+     * 读取方式：Coil.load(filePath) 直接支持
+     *
+     * @param context 任意 Context（用于 ContentResolver 和 filesDir）
+     * @param sourceUri 从 ActivityResultContracts 返回的图片 URI
+     * @return 私有文件绝对路径字符串；复制失败返回 null
+     */
+    fun copyImageToPrivateDir(context: Context, sourceUri: Uri): String? {
+        return try {
+            val avatarsDir = File(context.filesDir, "avatars").apply {
+                if (!exists()) mkdirs()
+            }
+            val destFile = File(avatarsDir, "avatar_${System.currentTimeMillis()}.jpg")
+            context.contentResolver.openInputStream(sourceUri)?.use { input ->
+                FileOutputStream(destFile).use { output ->
+                    input.copyTo(output)
+                }
+            } ?: return null
+            destFile.absolutePath
+        } catch (e: Exception) {
+            Log.e("SystemUtils", "copyImageToPrivateDir failed: ${e.message}", e)
+            null
+        }
+    }
+
 
     private val mViewModel by viewModels<MainViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -328,7 +395,7 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     fun MainPage() {
-        val contactList = FaceCall.internalContacts
+        val contactList = mViewModel.contactState.value
         var avatarSelectedIndex by rememberSaveable { mutableIntStateOf(-1) }
         val name = mViewModel.nameState
         val phoneNumber = mViewModel.phoneNumberState
@@ -336,6 +403,7 @@ class MainActivity : ComponentActivity() {
         var phoneNumberFocus by rememberSaveable { mutableStateOf(false) }
         var showSchedule by mViewModel.showScheduleState
         var scheduleSelectIndex by rememberSaveable { mutableIntStateOf(-1) }
+        var avatarStatus = mViewModel.avatarState
         Box(modifier = Modifier.fillMaxSize()) {
             Column {
                 //Caller Info
@@ -372,8 +440,8 @@ class MainActivity : ComponentActivity() {
                             .background(Color(0xff202020))
                             .padding(10.dp)
                     ) {
-                        Image(
-                            painter = painterResource(R.drawable.fc_avatar_01),
+                        AsyncImage(
+                            model = avatarStatus.value,
                             contentScale = ContentScale.Crop,
                             contentDescription = null,
                             modifier = Modifier
@@ -448,7 +516,9 @@ class MainActivity : ComponentActivity() {
                                     .size(84.dp)
                                     .clip(RoundedCornerShape(12.dp))
                                     .clickable {
-                                        toast("选择图片")
+                                        pickAvatarLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        )
                                     }
                                     .border(0.5.dp, Color.Gray, RoundedCornerShape(12.dp))
 
@@ -477,6 +547,7 @@ class MainActivity : ComponentActivity() {
                                         .clip(RoundedCornerShape(12.dp))
                                         .clickable {
                                             avatarSelectedIndex = index
+                                            avatarStatus.value = R.drawable.fc_ic_contact
                                         }
                                         .border(borderWidth, borderColor, RoundedCornerShape(12.dp))
 
@@ -500,13 +571,14 @@ class MainActivity : ComponentActivity() {
                                             avatarSelectedIndex = index
                                             mViewModel.nameState.value = contact.name
                                             mViewModel.phoneNumberState.value = contact.number
+                                            avatarStatus.value = contact.resource!!
                                         }
                                         .border(borderWidth, borderColor, RoundedCornerShape(12.dp))
 
                                 ) {
                                     if (contact.isInternal) {
-                                        Image(
-                                            painter = painterResource(contact.icon!!),
+                                        AsyncImage(
+                                            model = contact.resource,
                                             contentDescription = null,
                                             modifier = Modifier
                                                 .fillMaxSize()
