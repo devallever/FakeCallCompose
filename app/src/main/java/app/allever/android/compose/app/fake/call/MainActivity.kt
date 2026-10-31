@@ -36,6 +36,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -63,10 +64,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import app.allever.android.compose.app.fake.call.data.ContactItem
+import app.allever.android.compose.app.fake.call.ui.theme.BlueEnd
 import app.allever.android.compose.app.fake.call.ui.theme.FakeCallComposeTheme
 import app.allever.android.compose.app.fake.call.ui.theme.GreenEnd
+import app.allever.android.compose.app.fake.call.ui.theme.OrangeEnd
 import app.allever.android.compose.app.fake.call.ui.theme.PinkEnd
 import app.allever.android.compose.app.fake.call.ui.theme.PurpleEnd
+import app.allever.android.compose.app.fake.call.ui.theme.YellowEnd
 import app.allever.android.compose.app.fake.call.util.DisplayHelper
 import app.allever.android.compose.app.fake.call.util.log
 import app.allever.android.compose.app.fake.call.util.toast
@@ -1052,7 +1056,334 @@ class MainActivity : ComponentActivity() {
     @Preview
     @Composable
     fun SettingsPage() {
-        Text(text = "Settings Page")
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            //GENERAL Column
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color(0xff1A1A1C))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+
+                //text GENERAL
+                Text(
+                    text = "GENERAL",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    lineHeight = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                //ITEM APP THEME
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        toast("App Theme")
+                    }
+                    .padding(vertical = 16.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(90.dp))
+                            .background(PurpleEnd)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.fc_ic_settings),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(Color.White),
+                            modifier = Modifier
+                                .size(20.dp)
+                                .align(Alignment.Center)
+                        )
+
+                    }
+
+                    //Title App Theme
+                    Text(
+                        text = "App Theme",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .weight(1f)
+                            .align(Alignment.CenterVertically)
+                    )
+
+                    //description
+                    Text(
+                        text = "Description",
+                        color = Color.Gray,
+                        fontSize = 12.sp,
+                        lineHeight = 10.sp,
+                        modifier = Modifier
+                            .padding(end = 4.dp)
+                            .align(Alignment.CenterVertically)
+                    )
+
+                    Row(modifier = Modifier.align(Alignment.CenterVertically)) {
+                        Image(
+                            painter = painterResource(R.drawable.fc_ic_arrow_right),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(Color.White),
+                            modifier = Modifier
+                                .size(20.dp)
+                                .align(Alignment.CenterVertically)
+                        )
+                    }
+
+                }
+
+                //line
+                HorizontalDivider(
+                    color = Color.Gray, thickness = 0.5.dp, modifier = Modifier.height(0.5.dp)
+                )
+
+                //item vibration
+                Row(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(90.dp))
+                            .background(BlueEnd)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.fc_ic_settings),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(Color.White),
+                            modifier = Modifier
+                                .size(20.dp)
+                                .align(Alignment.Center)
+                        )
+
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .weight(1f)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        //titleVibration
+                        Text(
+                            text = "Vibration",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            lineHeight = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                        )
+                        //desc
+                        Text(
+                            text = "Vibrate on incoming fake call",
+                            color = Color.Gray,
+                            fontSize = 12.sp,
+                            lineHeight = 10.sp,
+                            modifier = Modifier
+                        )
+                    }
+
+                    Switch(
+                        checked = mViewModel.vibrationState.value, onCheckedChange = {
+                            mViewModel.vibrationState.value = it
+                        }, modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                }
+
+                //line
+                HorizontalDivider(
+                    color = Color.Gray, thickness = 0.5.dp, modifier = Modifier.height(0.5.dp)
+                )
+
+                //item flash
+                Row(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(90.dp))
+                            .background(OrangeEnd)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.fc_ic_settings),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(Color.White),
+                            modifier = Modifier
+                                .size(20.dp)
+                                .align(Alignment.Center)
+                        )
+
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .weight(1f)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        //titleVibration
+                        Text(
+                            text = "Flash",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            lineHeight = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                        )
+                        //desc
+                        Text(
+                            text = "Blink flashlight on incoming fake call",
+                            color = Color.Gray,
+                            fontSize = 12.sp,
+                            lineHeight = 10.sp,
+                            modifier = Modifier
+                        )
+                    }
+
+                    Switch(
+                        checked = mViewModel.flashState.value, onCheckedChange = {
+                            mViewModel.flashState.value = it
+                        }, modifier = Modifier.align(Alignment.CenterVertically)
+                    )
+                }
+            }
+
+            //Support Column
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color(0xff1A1A1C))
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+
+                //text SUPPORT
+                Text(
+                    text = "SUPPORT",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    lineHeight = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                //ITEM RATE APP
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        toast("Rate App")
+                    }
+                    .padding(vertical = 16.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(90.dp))
+                            .background(YellowEnd)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.fc_ic_settings),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(Color.White),
+                            modifier = Modifier
+                                .size(20.dp)
+                                .align(Alignment.Center)
+                        )
+
+                    }
+
+                    //Title Rate App
+                    Text(
+                        text = "Rate App",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .weight(1f)
+                            .align(Alignment.CenterVertically)
+                    )
+
+                    Image(
+                        painter = painterResource(R.drawable.fc_ic_arrow_right),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(Color.White),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .align(Alignment.CenterVertically)
+                    )
+
+                }
+
+                //line
+                HorizontalDivider(
+                    color = Color.Gray, thickness = 0.5.dp, modifier = Modifier.height(0.5.dp)
+                )
+
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        toast("Share App")
+                    }
+                    .padding(vertical = 16.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(90.dp))
+                            .background(GreenEnd)
+                            .align(Alignment.CenterVertically)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.fc_ic_settings),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(Color.White),
+                            modifier = Modifier
+                                .size(20.dp)
+                                .align(Alignment.Center)
+                        )
+
+                    }
+
+                    //Title Share App
+                    Text(
+                        text = "Share App",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .weight(1f)
+                            .align(Alignment.CenterVertically)
+                    )
+
+                    Image(
+                        painter = painterResource(R.drawable.fc_ic_arrow_right),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(Color.White),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .align(Alignment.CenterVertically)
+                    )
+
+                }
+            }
+        }
     }
 
 
