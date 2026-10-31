@@ -9,6 +9,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,10 +21,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,22 +39,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
 import app.allever.android.compose.app.fake.call.ui.theme.FakeCallComposeTheme
 import app.allever.android.compose.app.fake.call.ui.theme.GreenEnd
 import app.allever.android.compose.app.fake.call.ui.theme.PurpleEnd
+import app.allever.android.compose.app.fake.call.util.DisplayHelper
+import app.allever.android.compose.app.fake.call.util.log
 import app.allever.android.compose.app.fake.call.util.toast
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
 
@@ -60,6 +70,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val rememberIndex = mViewModel.pageState
+            var showSchedule by mViewModel.showScheduleState
+            var buttonBottomY by remember { mutableIntStateOf(0) }
             FakeCallComposeTheme(true) {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     //整个页面
@@ -111,16 +123,19 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
-                            Row(
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .clip(RoundedCornerShape(45.dp))
-                                    .border(1.dp, Color(0xff8298E7), RoundedCornerShape(45.dp))
-                                    .clickable {
-                                        toast("选择时间")
-                                    }
-                                    .background(Color(0xff242A3B))
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)) {
+                            Row(modifier = Modifier
+                                .onGloballyPositioned {
+                                    buttonBottomY = it.boundsInWindow().bottom.roundToInt()
+                                    log("buttonBottomY = $buttonBottomY")
+                                }
+                                .align(Alignment.CenterEnd)
+                                .clip(RoundedCornerShape(45.dp))
+                                .border(1.dp, Color(0xff8298E7), RoundedCornerShape(45.dp))
+                                .clickable {
+                                    showSchedule = !showSchedule
+                                }
+                                .background(Color(0xff242A3B))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)) {
                                 Box(
                                     modifier = Modifier
                                         .size(24.dp)
@@ -147,7 +162,7 @@ class MainActivity : ComponentActivity() {
                                     )
                                     //now
                                     Text(
-                                        text = "Now",
+                                        text = mViewModel.scheduleTitleState.value,
                                         fontSize = 14.sp,
                                         lineHeight = 14.sp,
                                         color = PurpleEnd,
@@ -288,11 +303,13 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun MainPage() {
         val contactList = FaceCall.internalContacts
-        var selectedIndex by rememberSaveable { mutableIntStateOf(-1) }
+        var avatarSelectedIndex by rememberSaveable { mutableIntStateOf(-1) }
         val name = mViewModel.nameState
         val phoneNumber = mViewModel.phoneNumberState
         var nameFocus by rememberSaveable { mutableStateOf(false) }
         var phoneNumberFocus by rememberSaveable { mutableStateOf(false) }
+        var showSchedule by mViewModel.showScheduleState
+        var scheduleSelectIndex by rememberSaveable { mutableIntStateOf(-1) }
         Box(modifier = Modifier.fillMaxSize()) {
             Column {
                 //Caller Info
@@ -419,7 +436,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         itemsIndexed(contactList) { index, contact ->
-                            val isSelected = selectedIndex == index
+                            val isSelected = avatarSelectedIndex == index
                             val borderWidth = if (isSelected) 3.dp else 0.5.dp
                             val borderColor = if (isSelected) PurpleEnd else Color.Gray
 
@@ -430,7 +447,7 @@ class MainActivity : ComponentActivity() {
                                         .size(84.dp)
                                         .clip(RoundedCornerShape(12.dp))
                                         .clickable {
-                                            selectedIndex = index
+                                            avatarSelectedIndex = index
                                         }
                                         .border(borderWidth, borderColor, RoundedCornerShape(12.dp))
 
@@ -451,7 +468,7 @@ class MainActivity : ComponentActivity() {
                                         .size(84.dp)
                                         .clip(RoundedCornerShape(12.dp))
                                         .clickable {
-                                            selectedIndex = index
+                                            avatarSelectedIndex = index
                                             mViewModel.nameState.value = contact.name
                                             mViewModel.phoneNumberState.value = contact.number
                                         }
@@ -589,7 +606,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         //Title
                         Text(
-                            text = "Call Schedule",
+                            text = "Call Schedule - ${mViewModel.scheduleTitleState.value}",
                             color = Color.White,
                             fontSize = 14.sp,
                             lineHeight = 14.sp,
@@ -638,6 +655,151 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            if (showSchedule) {
+                val popWidth = 280
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0x00000000))
+                        .pointerInput(Unit) {
+                            detectTapGestures(onTap = { /*showSchedule = false*/ })
+                        }) {
+                    Popup(
+                        offset = IntOffset(
+                            DisplayHelper.getScreenWidth() - DisplayHelper.dip2px(
+                                popWidth
+                            ), 0
+                        ), onDismissRequest = { showSchedule = false }) {
+
+                        Column(
+                            modifier = Modifier
+                                .width(popWidth.dp)
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(Color(0xff24252F))
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) { }
+                                .padding(vertical = 16.dp)) {
+                            //Call schedule
+                            Text(
+                                text = "Call Schedule",
+                                color = Color.White,
+                                fontSize = 14.sp,
+                                lineHeight = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                            //when should the fake call start?
+                            Text(
+                                text = "When should the fake call start?",
+                                color = Color.Gray,
+                                fontSize = 12.sp,
+                                lineHeight = 12.sp,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+
+                            //line
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                thickness = 1.dp,
+                                color = Color.Gray
+                            )
+
+                            //schedule list
+                            LazyColumn(
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            ) {
+                                itemsIndexed(FaceCall.scheduleList) { index, schedule ->
+                                    val selected = scheduleSelectIndex == index
+                                    val selectedBgColor =
+                                        if (selected) Color(0xff2D3243) else Color(0xff242A3B)
+                                    //box
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(
+                                                horizontal = 0.dp, vertical = 2.dp
+                                            )
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(selectedBgColor)
+                                            .clickable {
+                                                scheduleSelectIndex = index
+                                                mViewModel.scheduleTitleState.value = schedule.title
+                                                showSchedule = false
+                                            }
+                                            .padding(10.dp)) {
+
+                                        Row {
+                                            Box(
+                                                contentAlignment = Alignment.Center,
+                                                modifier = Modifier
+                                                    .size(40.dp)
+                                                    .clip(RoundedCornerShape(10.dp))
+                                                    .background(Color(0xff2F2E30))
+                                            ) {
+                                                Image(
+                                                    painter = painterResource(R.drawable.fc_ic_time),
+                                                    contentDescription = null,
+                                                    colorFilter = ColorFilter.tint(Color.White),
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+
+                                            //column weight 1
+                                            Column(
+                                                modifier = Modifier
+                                                    .padding(horizontal = 10.dp)
+                                                    .weight(1f)
+                                                    .align(Alignment.CenterVertically)
+                                            ) {
+                                                Text(
+                                                    text = schedule.title,
+                                                    color = Color.White,
+                                                    fontSize = 14.sp,
+                                                    lineHeight = 12.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Text(
+                                                    text = schedule.desc,
+                                                    color = Color.Gray,
+                                                    fontSize = 12.sp,
+                                                    lineHeight = 10.sp
+                                                )
+                                            }
+
+                                            if (selected) {
+                                                Image(
+                                                    painter = painterResource(R.drawable.fc_ic_down_arrow),
+                                                    contentDescription = null,
+                                                    colorFilter = ColorFilter.tint(Color.White),
+                                                    modifier = Modifier
+                                                        .size(20.dp)
+                                                        .align(Alignment.CenterVertically)
+                                                )
+                                            }
+                                        }
+
+
+                                    }
+
+
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        }
+
+    }
+
+    override fun onBackPressed() {
+        if (mViewModel.showScheduleState.value) {
+            mViewModel.showScheduleState.value = false
+        } else {
+            super.onBackPressed()
         }
 
     }
